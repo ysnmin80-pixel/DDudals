@@ -1,0 +1,636 @@
+  <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>🍻 보정동 카페거리 회식 장소 투표</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <style>
+        :root {
+          --primary: #4F46E5;
+          --primary-hover: #4338CA;
+          --bg: #F8FAFC;
+          --card-bg: #FFFFFF;
+          --text-main: #0F172A;
+          --text-muted: #64748B;
+          --naver-green: #03C75A;
+          --border: #E2E8F0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 32px 16px 120px; }
+        .container { max-width: 800px; margin: 0 auto; }
+    
+        /* Header */
+        header { text-align: center; margin-bottom: 28px; }
+        .badge {
+          display: inline-block; background: #EEF2FF; color: var(--primary);
+          padding: 7px 16px; border-radius: 9999px; font-weight: 700; font-size: 14px; margin-bottom: 12px;
+        }
+        h1 { font-size: 30px; font-weight: 800; color: #1E293B; margin-bottom: 10px; }
+        p.subtitle { color: var(--text-muted); font-size: 16px; }
+    
+        /* Auto Nickname Box */
+        .nick-box {
+          background: var(--card-bg); border: 2px solid #E0E7FF; border-radius: 16px;
+          padding: 16px 22px; display: flex; align-items: center; justify-content: space-between;
+          gap: 12px; margin-bottom: 30px; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.06);
+          flex-wrap: wrap;
+        }
+        .nick-title { font-weight: 700; font-size: 15px; color: #334155; display: flex; align-items: center; gap: 8px; }
+        .nick-input-group { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 400px; }
+        .nick-input {
+          flex: 1; padding: 11px 16px; border: 1.5px solid #CBD5E1; border-radius: 12px;
+          font-size: 15px; font-weight: 700; outline: none; transition: all 0.2s;
+          background: #F1F5F9; color: #1E293B;
+        }
+        .nick-input:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        .btn-dice {
+          padding: 11px 16px; background: #EEF2FF; color: var(--primary); border: 1px solid #C7D2FE;
+          border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap;
+          transition: all 0.2s;
+        }
+        .btn-dice:hover { background: #E0E7FF; }
+    
+        /* Candidates List - 큼직한 카드 목록 */
+        .candidates-list { display: flex; flex-direction: column; gap: 26px; margin-bottom: 38px; }
+        .card {
+          background: var(--card-bg); border: 2px solid var(--border); border-radius: 20px;
+          overflow: hidden; transition: all 0.25s ease; cursor: pointer; position: relative;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+        }
+        .card:hover { transform: translateY(-3px); border-color: #94A3B8; box-shadow: 0 14px 28px -6px rgba(0,0,0,0.09); }
+        .card.selected {
+          border-color: var(--primary); background: #FAF5FF;
+          box-shadow: 0 14px 30px -6px rgba(79, 70, 229, 0.22);
+        }
+    
+        /* 대표 메뉴 사진 영역 */
+        .img-wrap { position: relative; width: 100%; height: 260px; background: #0F172A; overflow: hidden; }
+        .img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+        .card:hover .img-wrap img { transform: scale(1.03); }
+        .img-tag {
+          position: absolute; top: 16px; left: 16px; background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(6px); color: #fff; padding: 6px 14px; border-radius: 10px;
+          font-size: 13px; font-weight: 700; z-index: 2;
+        }
+        .btn-change-img {
+          position: absolute; top: 16px; right: 16px; background: rgba(255, 255, 255, 0.92);
+          color: #1E293B; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px;
+          font-weight: 700; cursor: pointer; z-index: 3; transition: all 0.2s;
+        }
+        .btn-change-img:hover { background: #FFF; transform: scale(1.05); }
+    
+        /* Card Content */
+        .card-body { padding: 24px; }
+        .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .card-title { font-size: 22px; font-weight: 800; color: #1E293B; display: flex; align-items: center; gap: 8px; }
+        
+        /* 체크박스 */
+        .checkbox-wrap {
+          width: 32px; height: 32px; border-radius: 10px; border: 2.5px solid #CBD5E1;
+          display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: #fff;
+        }
+        .card.selected .checkbox-wrap {
+          background: var(--primary); border-color: var(--primary);
+        }
+        .checkbox-wrap svg { display: none; width: 20px; height: 20px; stroke: #fff; stroke-width: 3.2; }
+        .card.selected .checkbox-wrap svg { display: block; }
+    
+        .desc { font-size: 15px; color: #475569; margin-bottom: 14px; line-height: 1.5; }
+        .menu-highlight {
+          background: #F1F5F9; border-left: 4px solid var(--primary); border-radius: 0 10px 10px 0;
+          padding: 10px 14px; font-size: 14px; color: #1E293B; font-weight: 700; margin-bottom: 18px;
+        }
+    
+        /* 링크 버튼 모음 (지도 / 블로그 / 주소복사) */
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .btn-map {
+          flex: 1; min-width: 125px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          background: var(--naver-green); color: #fff; padding: 11px 14px; border-radius: 12px;
+          text-decoration: none; font-size: 13.5px; font-weight: 700; transition: opacity 0.2s;
+        }
+        .btn-map:hover { opacity: 0.92; }
+        
+        .btn-blog {
+          flex: 1; min-width: 125px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          background: #F0FDF4; color: #166534; border: 1.5px solid #BBF7D0; padding: 11px 14px; border-radius: 12px;
+          text-decoration: none; font-size: 13.5px; font-weight: 700; transition: all 0.2s;
+        }
+        .btn-blog:hover { background: #DCFCE7; border-color: #86EFAC; }
+    
+        .btn-copy {
+          padding: 11px 15px; background: #F1F5F9; color: #334155; border: 1px solid #CBD5E1;
+          border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+          white-space: nowrap;
+        }
+        .btn-copy:hover { background: #E2E8F0; color: #0F172A; }
+    
+        /* 4번 기타 추천 입력칸 */
+        .custom-input-box {
+          margin-top: 14px; padding: 14px; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 12px;
+        }
+        .custom-input {
+          width: 100%; padding: 12px 14px; border: 1.5px solid #CBD5E1; border-radius: 10px;
+          font-size: 15px; outline: none; transition: border-color 0.2s;
+        }
+        .custom-input:focus { border-color: var(--primary); background: #FFF; }
+    
+        /* Results Dashboard */
+        .results-card {
+          background: var(--card-bg); border-radius: 22px; border: 2px solid var(--border);
+          padding: 30px 26px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.06); margin-bottom: 36px;
+        }
+        .results-head {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 22px; padding-bottom: 16px; border-bottom: 2px solid #F1F5F9;
+        }
+        .results-head h2 { font-size: 22px; font-weight: 800; color: #1E293B; }
+        .voter-count { font-size: 15px; color: var(--primary); font-weight: 800; }
+    
+        .poll-item { margin-bottom: 20px; }
+        .poll-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .poll-bar-bg { height: 18px; background: #F1F5F9; border-radius: 999px; overflow: hidden; position: relative; }
+        .poll-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #4F46E5, #38BDF8); width: 0%; transition:
+  width 0.5s ease; }
+        .poll-voters { font-size: 13px; color: #64748B; margin-top: 6px; }
+    
+        .dashboard-footer {
+          display: flex; gap: 10px; margin-top: 26px; padding-top: 20px;
+          border-top: 1px solid var(--border); justify-content: flex-end; flex-wrap: wrap;
+        }
+        .btn-sub {
+          padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 700;
+          cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-share { background: #EEF2FF; color: var(--primary); }
+        .btn-share:hover { background: #E0E7FF; }
+        .btn-reset { background: #FEE2E2; color: #EF4444; }
+        .btn-reset:hover { background: #FECACA; }
+    
+        .custom-pill {
+          display: inline-block; background: #F1F5F9; border: 1px solid #E2E8F0;
+          padding: 5px 12px; border-radius: 999px; font-size: 13px; color: #334155; margin: 4px 6px 4px 0;
+        }
+    
+        /* 맨 밑으로 배치된 [내 투표 완료하기] 버튼 */
+        .bottom-action-wrap { text-align: center; padding: 20px 0 10px; }
+        .btn-submit-large {
+          width: 100%; max-width: 520px; background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+          color: #fff; border: none; padding: 19px 36px; border-radius: 18px;
+          font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 26px -6px rgba(79, 70, 229, 0.45);
+          transition: all 0.25s ease; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-submit-large:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -6px rgba(79, 70, 229, 0.55); }
+        .submit-hint { margin-top: 12px; font-size: 14px; color: #64748B; font-weight: 600; }
+      </style>
+    </head>
+    <body>
+    
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="badge">🗳️ 보정동 카페거리 회식 투표</div>
+        <h1>화요일 저녁식사 어디로 갈까요?</h1>
+        <p class="subtitle">중복 선택(다중 투표)이 가능합니다. 가고 싶은 곳들을 골라주세요!</p>
+      </header>
+    
+      <!-- 닉네임 자동 생성 영역 -->
+      <div class="nick-box">
+        <div class="nick-title">
+          <span>👤 투표자 닉네임 (자동 설정 완료)</span>
+        </div>
+        <div class="nick-input-group">
+          <input type="text" id="voterNick" class="nick-input" placeholder="닉네임 자동 생성 중..." />
+          <button type="button" class="btn-dice" onclick="rollNewNick()">🎲 다른 닉네임</button>
+        </div>
+      </div>
+    
+      <!-- 4가지 항목 -->
+      <div class="candidates-list">
+        
+        <!-- 1. 다복상회 -->
+        <div class="card" onclick="toggleOption(1)" id="card-1">
+          <div class="img-wrap">
+            <span class="img-tag">🥓 대표메뉴: 삼겹김치구이</span>
+            <button type="button" class="btn-change-img" onclick="event.stopPropagation(); triggerChangePhoto(1)">📷 사진 변경</button>
+            <img id="img-1" 
+                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Samgyeopsal-gui.jpg/800px-Samgyeopsal-gui.jpg" 
+                 referrerpolicy="no-referrer"
+                 onerror="this.src='https://images.unsplash.com/photo-1590301157890-4810ed352733?w=1000&auto=format&fit=crop&q=80'"
+                 alt="다복상회 삼겹김치구이" />
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">1. 다복상회</h3>
+              <div class="checkbox-wrap" id="check-1">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="desc">지글지글 구워낸 고소한 삼겹살과 매콤새콤 볶음김치의 정통 포차 요리</p>
+            <div class="menu-highlight">🔥 대표메뉴: 삼겹김치구이, 오삼불고기, 모듬소시지찌개</div>
+            
+            <!-- 지도, 블로그, 주소 버튼 모음 -->
+            <div class="btn-row" onclick="event.stopPropagation()">
+              <a href="https://map.naver.com/p/search/%EB%B3%B4%EC%A0%95%EB%8F%99%20%EB%8B%A4%EB%B3%B5%EC%83%81%ED%9A%8C" target="_blank" class="btn-map">📍 네이버 지도</a>
+              <a href="https://search.naver.com/search.naver?where=blog&query=%EB%B3%B4%EC%A0%95%EB%8F%99%20%EB%8B%A4%EB%B3%B5%EC%83%81%ED%9A%8C" target="_blank" class="btn-blog">📝 블로그 후기</a>
+              <button type="button" class="btn-copy" onclick="copyAddress('경기 용인시 기흥구 죽전로15번길 8-8')">주소 복사</button>
+            </div>
+          </div>
+        </div>
+    
+        <!-- 2. 석문어 -->
+        <div class="card" onclick="toggleOption(2)" id="card-2">
+          <div class="img-wrap">
+            <span class="img-tag">🐙 대표메뉴: 통문어찜 & 문어숙회</span>
+            <button type="button" class="btn-change-img" onclick="event.stopPropagation(); triggerChangePhoto(2)">📷 사진 변경</button>
+            <img id="img-2" 
+                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Muneo-sukhoe.jpg/800px-Muneo-sukhoe.jpg" 
+                 referrerpolicy="no-referrer"
+                 onerror="this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=1000&auto=format&fit=crop&q=80'"
+                 alt="석문어 문어찜" />
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">2. 석문어</h3>
+              <div class="checkbox-wrap" id="check-2">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="desc">부드럽고 야들야들하게 쪄낸 자연산 통문어찜과 쫄깃한 숙회 & 시원한 해물라면</p>
+            <div class="menu-highlight">🐙 대표메뉴: 자연산 통문어찜, 문어숙회, 얼큰해물라면</div>
+            
+            <!-- 지도, 블로그, 주소 버튼 모음 -->
+            <div class="btn-row" onclick="event.stopPropagation()">
+              <a href="https://map.naver.com/p/search/%EB%B3%B4%EC%A0%95%EB%8F%99%20%EC%84%9D%EB%AC%B8%EC%96%B4" target="_blank" class="btn-map">📍 네이버 지도</a>
+              <a href="https://search.naver.com/search.naver?where=blog&query=%EB%B3%B4%EC%A0%95%EB%8F%99%20%EC%84%9D%EB%AC%B8%EC%96%B4" target="_blank" class="btn-blog">📝 블로그 후기</a>
+              <button type="button" class="btn-copy" onclick="copyAddress('경기 용인시 기흥구 죽전로15번길 11-15')">주소 복사</button>
+            </div>
+          </div>
+        </div>
+    
+        <!-- 3. 미스터오징어 -->
+        <div class="card" onclick="toggleOption(3)" id="card-3">
+          <div class="img-wrap">
+            <span class="img-tag">🦑 대표메뉴: 산오징어회</span>
+            <button type="button" class="btn-change-img" onclick="event.stopPropagation(); triggerChangePhoto(3)">📷 사진 변경</button>
+            <img id="img-3" 
+                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Ojingeo-hoe.jpg/800px-Ojingeo-hoe.jpg" 
+                 referrerpolicy="no-referrer"
+                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Ika_somen.jpg/800px-Ika_somen.jpg'"
+                 alt="미스터오징어 산오징어회" />
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">3. 미스터오징어</h3>
+              <div class="checkbox-wrap" id="check-3">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="desc">투명하고 얇게 썰어내어 달큰하고 쫄깃한 산오징어회와 바삭한 오징어튀김 세트</p>
+            <div class="menu-highlight">🦑 대표메뉴: 산오징어회, 오징어활어세트, 오징어튀김</div>
+            
+            <!-- 지도, 블로그, 주소 버튼 모음 -->
+            <div class="btn-row" onclick="event.stopPropagation()">
+              <a href="https://map.naver.com/p/search/%EB%B3%B4%EC%A0%95%EB%8F%99%20%EB%AF%B8%EC%8A%A4%ED%84%B0%EC%98%A4%EC%A7%95%EC%96%B4" target="_blank" class="btn-map">📍 네이버 지도</a>
+              <a href="https://search.naver.com/search.naver?where=blog&query=%EB%B3%B4%EC%A0%95%EB%8F%99%20%EB%AF%B8%EC%8A%A4%ED%84%B0%EC%98%A4%EC%A7%95%EC%96%B4" target="_blank" class="btn-blog">📝 블로그 후기</a>
+              <button type="button" class="btn-copy" onclick="copyAddress('경기 용인시 기흥구 보정로 117')">주소 복사</button>
+            </div>
+          </div>
+        </div>
+    
+        <!-- 4. 기타 다른 곳 추천 -->
+        <div class="card" onclick="toggleOption(4)" id="card-4">
+          <div class="img-wrap" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); display: flex; align-items: center;
+  justify-content: center;">
+            <span style="font-size: 64px;">💡</span>
+            <span class="img-tag">팀원 자유 추천</span>
+          </div>
+          <div class="card-body">
+            <div class="card-head">
+              <h3 class="card-title">4. 기타 다른 곳 추천</h3>
+              <div class="checkbox-wrap" id="check-4">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="desc">다른 가고 싶은 곳이 있다면 선택 후 식당 이름을 입력해주세요!</p>
+            <div class="custom-input-box" onclick="event.stopPropagation()">
+              <input type="text" id="customPlaceName" class="custom-input" placeholder="식당 이름을 적어주세요 (예: 단국대 양꼬치, 삼겹살
+  등)" />
+            </div>
+          </div>
+        </div>
+    
+      </div>
+    
+      <!-- 숨겨진 파일 선택기 (사진 변경용) -->
+      <input type="file" id="filePicker" accept="image/*" style="display:none;" onchange="handleFileSelected(event)" />
+    
+      <!-- 실시간 투표 현황 대시보드 -->
+      <div class="results-card">
+        <div class="results-head">
+          <h2>📊 현재 투표 현황</h2>
+          <div class="voter-count" id="totalVoters">총 0명 참여</div>
+        </div>
+    
+        <!-- 1. 다복상회 -->
+        <div class="poll-item">
+          <div class="poll-info">
+            <span>🥓 1. 다복상회 (삼겹김치구이)</span>
+            <span id="stat-1">0표 (0%)</span>
+          </div>
+          <div class="poll-bar-bg">
+            <div class="poll-bar-fill" id="bar-1"></div>
+          </div>
+          <div class="poll-voters" id="voters-1">투표자: 없음</div>
+        </div>
+    
+        <!-- 2. 석문어 -->
+        <div class="poll-item">
+          <div class="poll-info">
+            <span>🐙 2. 석문어 (문어찜)</span>
+            <span id="stat-2">0표 (0%)</span>
+          </div>
+          <div class="poll-bar-bg">
+            <div class="poll-bar-fill" id="bar-2"></div>
+          </div>
+          <div class="poll-voters" id="voters-2">투표자: 없음</div>
+        </div>
+    
+        <!-- 3. 미스터오징어 -->
+        <div class="poll-item">
+          <div class="poll-info">
+            <span>🦑 3. 미스터오징어 (오징어회)</span>
+            <span id="stat-3">0표 (0%)</span>
+          </div>
+          <div class="poll-bar-bg">
+            <div class="poll-bar-fill" id="bar-3"></div>
+          </div>
+          <div class="poll-voters" id="voters-3">투표자: 없음</div>
+        </div>
+    
+        <!-- 4. 기타 현황 -->
+        <div class="poll-item">
+          <div class="poll-info">
+            <span>💡 4. 기타 다른 곳 추천</span>
+            <span id="stat-4">0표 (0%)</span>
+          </div>
+          <div class="poll-bar-bg">
+            <div class="poll-bar-fill" id="bar-4"></div>
+          </div>
+          <div class="poll-voters" id="voters-4" style="margin-bottom: 6px;">투표자: 없음</div>
+          <div id="custom-suggestions-list"></div>
+        </div>
+    
+        <!-- 공유 및 초기화 -->
+        <div class="dashboard-footer">
+          <button type="button" class="btn-sub btn-share" onclick="copyResultSummary()">📋 단톡방 공유용 텍스트 복사</button>
+          <button type="button" class="btn-sub btn-reset" onclick="resetAllVotes()">🔄 투표 초기화</button>
+        </div>
+      </div>
+    
+      <!-- 맨 밑으로 배치된 [내 투표 완료하기] 버튼 -->
+      <div class="bottom-action-wrap">
+        <button type="button" class="btn-submit-large" onclick="submitVote()">
+          <span>🗳️ 내 투표 완료하기</span>
+        </button>
+        <p class="submit-hint">위 목록에서 원하는 장소를 선택(중복 가능)한 후 버튼을 눌러주세요</p>
+      </div>
+    
+    </div>
+    
+    <script>
+      // 1. 닉네임 자동 생성 풀
+      const ADJECTIVES = ['칼퇴하는', '배고픈', '회식러버', '고기굽는', '맥주귀신', '소맥장인', '맛잘알', '프로참석러', '월급루팡',
+  '오늘만사는', '미식가', '해산물러버'];
+      const NOUNS = ['판다', '다람쥐', '펭귄', '호랑이', '라이언', '식객', '부장님', '막내', '과장님', '요정', '고양이', '쿼카'];
+    
+      function generateRandomNick() {
+        const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+        const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+        const num = Math.floor(Math.random() * 89 + 10);
+        return `${adj}_${noun}${num}`;
+      }
+    
+      function rollNewNick() {
+        document.getElementById('voterNick').value = generateRandomNick();
+      }
+    
+      // 2. 다중 선택 상태 관리
+      const selectedOptions = new Set();
+    
+      function toggleOption(id) {
+        const card = document.getElementById(`card-${id}`);
+        if (selectedOptions.has(id)) {
+          selectedOptions.delete(id);
+          card.classList.remove('selected');
+        } else {
+          selectedOptions.add(id);
+          card.classList.add('selected');
+          if (id === 4) {
+            document.getElementById('customPlaceName').focus();
+          }
+        }
+      }
+    
+      // 3. 사진 직접 변경 기능
+      let targetImgId = null;
+      function triggerChangePhoto(id) {
+        targetImgId = id;
+        const choice = confirm('[📷 사진 변경]\n\n[확인]을 누르면 컴퓨터에 있는 사진 파일을 직접 선택할 수 있습니다.\n[취소]를 누르면 인터넷
+  이미지 주소(URL)를 입력할 수 있습니다.');
+        if (choice) {
+          document.getElementById('filePicker').click();
+        } else {
+          const url = prompt('변경할 이미지의 웹 주소(URL)를 입력하세요:');
+          if (url && url.trim()) {
+            document.getElementById(`img-${id}`).src = url.trim();
+            localStorage.setItem(`CUSTOM_IMG_${id}`, url.trim());
+          }
+        }
+      }
+    
+      function handleFileSelected(e) {
+        const file = e.target.files[0];
+        if (!file || !targetImgId) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const dataUrl = evt.target.result;
+          document.getElementById(`img-${targetImgId}`).src = dataUrl;
+          localStorage.setItem(`CUSTOM_IMG_${targetImgId}`, dataUrl);
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+      }
+    
+      function loadCustomImages() {
+        [1, 2, 3].forEach(id => {
+          const saved = localStorage.getItem(`CUSTOM_IMG_${id}`);
+          if (saved) {
+            const img = document.getElementById(`img-${id}`);
+            if (img) img.src = saved;
+          }
+        });
+      }
+    
+      // 4. 로컬스토리지 저장 및 불러오기
+      const STORAGE_KEY = 'BOJEONG_DINNER_VOTE_DATA_V6';
+    
+      function getVoteData() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return {
+            votes: { 1: [], 2: [], 3: [], 4: [] },
+            customSuggestions: []
+          };
+        }
+        return JSON.parse(raw);
+      }
+    
+      function saveVoteData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+    
+      // 5. 투표 제출
+      function submitVote() {
+        let nick = document.getElementById('voterNick').value.trim();
+        if (!nick) {
+          nick = generateRandomNick();
+          document.getElementById('voterNick').value = nick;
+        }
+    
+        if (selectedOptions.size === 0) {
+          alert('위의 목록에서 최소 1곳 이상의 장소를 선택해주세요!');
+          return;
+        }
+    
+        let customName = '';
+        if (selectedOptions.has(4)) {
+          customName = document.getElementById('customPlaceName').value.trim();
+          if (!customName) {
+            alert('4번 [기타 장소]를 선택하셨습니다. 추천할 식당 이름을 입력해주세요!');
+            document.getElementById('customPlaceName').focus();
+            return;
+          }
+        }
+    
+        const data = getVoteData();
+    
+        // 중복 투표 시 기존 기록 갱신
+        for (let id in data.votes) {
+          data.votes[id] = data.votes[id].filter(v => v !== nick);
+        }
+        data.customSuggestions = data.customSuggestions.filter(item => item.nick !== nick);
+    
+        // 새 선택 반영
+        selectedOptions.forEach(id => {
+          data.votes[id].push(nick);
+          if (id === 4 && customName) {
+            data.customSuggestions.push({ nick: nick, place: customName });
+          }
+        });
+    
+        saveVoteData(data);
+        updateDashboard();
+    
+        alert(`🎉 [${nick}] 님의 투표가 정상적으로 완료되었습니다!`);
+    
+        // 선택 초기화 및 다음 투표자용 닉네임 세팅
+        selectedOptions.clear();
+        [1, 2, 3, 4].forEach(id => document.getElementById(`card-${id}`).classList.remove('selected'));
+        document.getElementById('customPlaceName').value = '';
+        rollNewNick();
+    
+        // 현황표로 스크롤
+        document.querySelector('.results-card').scrollIntoView({ behavior: 'smooth' });
+      }
+    
+      // 6. 현황표 화면 갱신
+      function updateDashboard() {
+        const data = getVoteData();
+    
+        const allVotersSet = new Set();
+        Object.values(data.votes).forEach(list => list.forEach(n => allVotersSet.add(n)));
+        const totalParticipants = allVotersSet.size;
+    
+        document.getElementById('totalVoters').textContent = `총 ${totalParticipants}명 참여`;
+    
+        [1, 2, 3, 4].forEach(id => {
+          const voters = data.votes[id] || [];
+          const count = voters.length;
+          const pct = totalParticipants === 0 ? 0 : Math.round((count / totalParticipants) * 100);
+    
+          document.getElementById(`stat-${id}`).textContent = `${count}표 (${pct}%)`;
+          document.getElementById(`bar-${id}`).style.width = `${pct}%`;
+          document.getElementById(`voters-${id}`).textContent = voters.length > 0 
+            ? `투표자: ${voters.join(', ')}` 
+            : '투표자: 없음';
+        });
+    
+        // 기타 추천 목록 출력
+        const customListDiv = document.getElementById('custom-suggestions-list');
+        customListDiv.innerHTML = '';
+        if (data.customSuggestions && data.customSuggestions.length > 0) {
+          let html = '<div style="font-size: 13px; font-weight: 700; color: #475569; margin-top: 6px; margin-bottom: 4px;">추천된
+  식당:</div>';
+          data.customSuggestions.forEach(item => {
+            html += `<span class="custom-pill">📍 <b>${escapeHtml(item.place)}</b> (${escapeHtml(item.nick)})</span>`;
+          });
+          customListDiv.innerHTML = html;
+        }
+      }
+    
+      // 7. 주소 복사 & 단톡방 공유
+      function copyAddress(address) {
+        navigator.clipboard.writeText(address).then(() => {
+          alert(`📋 주소가 복사되었습니다:\n"${address}"`);
+        });
+      }
+    
+      function copyResultSummary() {
+        const data = getVoteData();
+        const allVotersSet = new Set();
+        Object.values(data.votes).forEach(list => list.forEach(n => allVotersSet.add(n)));
+        const total = allVotersSet.size;
+    
+        let text = `[🍻 보정동 카페거리 회식 투표 현황 (총 ${total}명)]\n\n`;
+        text += `1. 다복상회 (삼겹김치구이): ${data.votes[1].length}표\n`;
+        text += `2. 석문어 (문어찜): ${data.votes[2].length}표\n`;
+        text += `3. 미스터오징어 (오징어회): ${data.votes[3].length}표\n`;
+        text += `4. 기타 추천: ${data.votes[4].length}표\n`;
+    
+        if (data.customSuggestions.length > 0) {
+          text += `\n[💡 기타 추천 의견]\n`;
+          data.customSuggestions.forEach(item => {
+            text += `- ${item.place} (${item.nick})\n`;
+          });
+        }
+    
+        navigator.clipboard.writeText(text).then(() => {
+          alert('📋 단톡방/슬랙 공유용 결과가 클립보드에 복사되었습니다!');
+        });
+      }
+    
+      function resetAllVotes() {
+        if (confirm('모든 투표 기록을 초기화하시겠습니까?')) {
+          localStorage.removeItem(STORAGE_KEY);
+          updateDashboard();
+          alert('투표 기록이 초기화되었습니다.');
+        }
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // 초기 실행
+      window.addEventListener('DOMContentLoaded', () => {
+        rollNewNick();
+        loadCustomImages();
+        updateDashboard();
+      });
+    </script>
+
+    </body>
+    </html>
